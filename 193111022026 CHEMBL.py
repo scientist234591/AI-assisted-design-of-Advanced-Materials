@@ -119,7 +119,7 @@ def save_structures_to_pdf(df, filename="chembl_structures.pdf", max_molecules=1
 # Main execution
 def main():
     print("Starting program...")
-    N = 500
+    N = 1000
     df_compounds = fetch_chembl_compounds(limit=N)
     
     if df_compounds.empty:
