@@ -13,7 +13,7 @@ from reportlab.lib.pagesizes import A4
 import os
 
 # Step 1: Connect to ChEMBL API and fetch compounds
-def fetch_chembl_compounds(limit=100):
+def fetch_chembl_compounds(limit=100000):
     """
     Fetch compounds from ChEMBL database
     limit: number of compounds to fetch (start small for testing)
@@ -26,20 +26,24 @@ def fetch_chembl_compounds(limit=100):
     # Convert to list of dictionaries
     compounds_list = []
     for comp in compounds:
+
+        properties = comp.get('molecule_properties') or {}
+        structures = comp.get('molecule_structures') or {}
+
         compound_data = {
             'chembl_id': comp.get('molecule_chembl_id'),
             'pref_name': comp.get('pref_name'),
             'molecule_type': comp.get('molecule_type'),
             'max_phase': comp.get('max_phase'),
-            'molecular_weight': comp.get('molecule_properties', {}).get('mw_freebase'),
-            'alogp': comp.get('molecule_properties', {}).get('alogp'),
-            'hbd': comp.get('molecule_properties', {}).get('hbd'),
-            'hba': comp.get('molecule_properties', {}).get('hba'),
-            'ro3_pass': comp.get('molecule_properties', {}).get('ro3_pass'),
-            'num_ro5_violations': comp.get('molecule_properties', {}).get('num_ro5_violations'),
-            'smiles': comp.get('molecule_structures', {}).get('canonical_smiles'),
-            'inchi': comp.get('molecule_structures', {}).get('standard_inchi'),
-            'inchi_key': comp.get('molecule_structures', {}).get('standard_inchi_key'),
+            'molecular_weight': properties.get('mw_freebase'),
+            'alogp': properties.get('alogp'),
+            'hbd': properties.get('hbd'),
+            'hba': properties.get('hba'),
+            'ro3_pass': properties.get('ro3_pass'),
+            'num_ro5_violations': properties.get('num_ro5_violations'),
+            'smiles': structures.get('canonical_smiles'),
+            'inchi': structures.get('standard_inchi'),
+            'inchi_key': structures.get('standard_inchi_key'),
         }
         compounds_list.append(compound_data)
     
@@ -59,7 +63,7 @@ def store_in_excel(df, filename="chembl_compounds.xlsx"):
     print(f"Data stored successfully in {filename}!")
 
 # Step 3: Printing 2D structures
-def save_structures_to_pdf(df, filename="chembl_structures.pdf", max_molecules=100):
+def save_structures_to_pdf(df, filename="chembl_structures.pdf", max_molecules=100000):
     print("Starting PDF generation...")
 
     doc = SimpleDocTemplate(filename, pagesize=A4)
@@ -115,8 +119,8 @@ def save_structures_to_pdf(df, filename="chembl_structures.pdf", max_molecules=1
 # Main execution
 def main():
     print("Starting program...")
-    
-    df_compounds = fetch_chembl_compounds(limit=100)
+    N = 500
+    df_compounds = fetch_chembl_compounds(limit=N)
     
     if df_compounds.empty:
         print("DataFrame is empty!")
